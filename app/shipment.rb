@@ -1,6 +1,4 @@
-require_relative 'shipment_config'
-require_relative 'file_iterator'
-require_relative 'discounter'
+Dir[File.join(__dir__, '*.rb')].each { |file| require file }
 
 class Shipment < ShipmentConfig
 
@@ -12,8 +10,16 @@ class Shipment < ShipmentConfig
     return false unless @file_path
     transactions = FileIterator.new(@file_path).build_transactions
     transactions = Discounter.new(transactions).build_discounts
+    @discounts_array = Printable.new(transactions).get_data
+    print_to_STDOUT
+  end
 
-    puts transactions.inspect
+  private
+
+  def print_to_STDOUT
+    @discounts_array.each do |line|
+      puts line
+    end
   end
 
   def set_file_path(file_path)

@@ -59,10 +59,24 @@ class FileIterator < ShipmentConfig
   end
 
   def valid_date(date)
+    valid = false
+
     begin
-      true if date.split(DATE_DELIMITER).length == 3
-    rescue
+      valid = true if date.split(DATE_DELIMITER).length == 3
+    rescue 
       false
     end
+
+    if valid
+      splitted = date.split(DATE_DELIMITER)
+      valid = false unless splitted[0].length == 4
+      valid = false unless splitted[1].length == 2
+      valid = false unless splitted[2].length == 2
+      valid = false if splitted[0].to_i < 1900 || splitted[0].to_i > 2100
+      valid = false if splitted[1].to_i > 12
+      valid = false if splitted[2].to_i > 31
+    end
+
+    valid
   end
 end

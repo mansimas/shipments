@@ -9,5 +9,5 @@ task :run do
 end
 
 task :test do
-  'ruby tests/run_test.rb --runner tap'
+  exec 'ruby tests/run_test.rb'
 end

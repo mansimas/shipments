@@ -4,10 +4,10 @@ class Discounter < ShipmentConfig
 
   def initialize(transactions)
     @transactions = transactions
+    set_discounts
   end
 
   def build_discounts
-    set_discounts
     check_free_shipment_discounts
     check_lowest_package_discounts
 
@@ -16,9 +16,10 @@ class Discounter < ShipmentConfig
 
   private
 
+  # creates object with key-value for every month, where key is month, and value is discount
   def set_discounts
     keys = @transactions.keys - [:ignored]
-    @discounts = Hash[ keys.product([ MAX_MONTHLY_DISCOUNT ]) ]
+    @discounts = Hash[keys.product([MAX_MONTHLY_DISCOUNT])]
   end
 
   def check_free_shipment_discounts
@@ -28,6 +29,7 @@ class Discounter < ShipmentConfig
     end
   end
 
+  # only once a shipment can get full discount
   def check_free_shipment_discount(transaction)
     discount = false
     found_shipments = 0
@@ -45,7 +47,7 @@ class Discounter < ShipmentConfig
 
   def add_free_shipment_discount(t)
     available_discount = @discounts[t[:month]]
-    total_discount = FREE_SHIPMENT_PRICE < available_discount ? FREE_SHIPMENT_PRICE : available_discount 
+    total_discount = [free_shipment_price, available_discount].min
     @discounts[t[:month]] = (available_discount - total_discount).round(2)
     t[:discount] = total_discount if total_discount > 0
   end
@@ -72,16 +74,27 @@ class Discounter < ShipmentConfig
 
   def apply_lowest_package_discount(t, discount)
     available_discount = @discounts[t[:month]]
-    total_discount = discount < available_discount ? discount : available_discount
+    total_discount = [discount, available_discount].min
     @discounts[t[:month]] = (available_discount - total_discount).round(2)
     t[:discount] = total_discount if total_discount > 0  
   end
 
   def current_price(t)
-    LOWEST_PRICES[t[:provider].to_sym]
+    lowest_prices[ t[:provider].to_sym ]
   end
 
   def minimum_price
-    LOWEST_PRICES.values.min
+    lowest_prices.values.min
+  end
+
+  def lowest_prices
+    { 
+      "#{LA_POSTE}": ShipmentConfig.const_get("C_#{LA_POSTE}_#{LOWEST_PRICE_ON}"), 
+      "#{MONDIAL_RELAY}": ShipmentConfig.const_get("C_#{MONDIAL_RELAY}_#{LOWEST_PRICE_ON}") 
+    }
+  end
+
+  def free_shipment_price
+    ShipmentConfig.const_get("C_#{FREE_SHIPMENT_PROVIDER}_#{FREE_SHIPMENT_ON}")
   end
 end
