@@ -18,13 +18,13 @@ class FileIterator < ShipmentConfig
   private
 
   def add_transaction(line, index)
-    arrayed = line_as_array(line)
+    arrayed = line.strip.split(' ')
     return set_line(arrayed, index) if valid_line(arrayed)
     @transactions[:ignored].push(arrayed: arrayed, index: index)
   end
 
   def set_line(arrayed, index)
-    month = month_appointment(arrayed)
+    month = current_month(arrayed)
     objected = line_as_object(arrayed, index, month)
     unless @transactions[month][objected[:size]]
       @transactions[month][objected[:size]] = []
@@ -32,21 +32,17 @@ class FileIterator < ShipmentConfig
     @transactions[month][objected[:size]].push(objected)
   end
 
-  def month_appointment(arrayed)
+  def current_month(arrayed)
     month_name = arrayed[0].split(DATE_DELIMITER).first(2).join('-')
     @transactions[month_name] = {} unless @transactions[month_name]
     month_name
   end
 
-  def line_as_array(line)
-    line.strip.split(' ')
-  end
-
-  def line_as_object(line, index, month)
+  def line_as_object(arrayed, index, month)
     {
-      date: line[0],
-      size: line[1],
-      provider: line[2],
+      date: arrayed[0],
+      size: arrayed[1],
+      provider: arrayed[2],
       index: index,
       month: month
     }
@@ -73,18 +69,18 @@ class FileIterator < ShipmentConfig
   end
 
   # checking 2000-02-02 format
-  def right_date_length(date_arr)
-    return false unless date_arr[0].length == 4
-    return false unless date_arr[1].length == 2
-    return false unless date_arr[2].length == 2
+  def right_date_length(arr)
+    return false unless arr[0].length == 4
+    return false unless arr[1].length == 2
+    return false unless arr[2].length == 2
     true
   end
 
-  # date outside of range of 1900 and 2100 would be not logical
-  def right_date_scope(date_arr)
-    return false if date_arr[0].to_i < 1900 || date_arr[0].to_i > 2100
-    return false if date_arr[1].to_i > 12
-    return false if date_arr[2].to_i > 31
+  # transaction date outside of range between 2000 and 2100 could never happend
+  def right_date_scope(arr)
+    return false unless arr[0].to_i.between?(2000, 2100)
+    return false unless arr[1].to_i.between?(1, 12)
+    return false unless arr[2].to_i.between?(1, 31)
     true
   end
 end

@@ -10,14 +10,14 @@ class Shipment < ShipmentConfig
     return false unless @file_path
     transactions = FileIterator.new(@file_path).build_transactions
     transactions = Discounter.new(transactions).build_discounts
-    @discounts_array = Printable.new(transactions).build_data
+    @discounts = Printable.new(transactions).build_data
     print_to_stdout
   end
 
   private
 
   def print_to_stdout
-    @discounts_array.each do |line|
+    @discounts.each do |line|
       puts line
     end
   end
