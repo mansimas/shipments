@@ -1,7 +1,7 @@
 require_relative 'app/shipment'
 
 task :run do
-  ARGV.each { |a| task a.to_sym do ; end }
+  ARGV.each { |a| task(a.to_sym { ; }) }
 
   ARGV.drop(1).each do |file_path|
     Shipment.new(file_path).discount

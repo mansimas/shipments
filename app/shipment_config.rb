@@ -1,9 +1,10 @@
+# Defining all possible configurable variables
 class ShipmentConfig
-  LA_POSTE = 'LP'
-  MONDIAL_RELAY = 'MR'
-  S_SIZE = 'S'
-  M_SIZE = 'M'
-  L_SIZE = 'L'
+  LA_POSTE = 'LP'.freeze
+  MONDIAL_RELAY = 'MR'.freeze
+  S_SIZE = 'S'.freeze
+  M_SIZE = 'M'.freeze
+  L_SIZE = 'L'.freeze
 
   # building constants example: C_LP_S
   # it begins with C, because lower-case letters can't be constants
@@ -14,10 +15,10 @@ class ShipmentConfig
   const_set("C_#{MONDIAL_RELAY}_#{M_SIZE}", 3)
   const_set("C_#{MONDIAL_RELAY}_#{L_SIZE}", 4)
 
-  AVAILABLE_SHIPMENTS = [LA_POSTE, MONDIAL_RELAY]
-  AVAILABLE_SIZES = [S_SIZE, M_SIZE, L_SIZE]
+  AVAILABLE_SHIPMENTS = [LA_POSTE, MONDIAL_RELAY].freeze
+  AVAILABLE_SIZES = [S_SIZE, M_SIZE, L_SIZE].freeze
 
-  DATE_DELIMITER = '-'
+  DATE_DELIMITER = '-'.freeze
   MAX_MONTHLY_DISCOUNT = 10.00
 
   FREE_SHIPMENT_PROVIDER = LA_POSTE

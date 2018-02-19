@@ -1,7 +1,7 @@
 require_relative 'shipment_config'
 
+# calculates discounts
 class Discounter < ShipmentConfig
-
   def initialize(transactions)
     @transactions = transactions
     set_discounts
@@ -16,7 +16,8 @@ class Discounter < ShipmentConfig
 
   private
 
-  # creates object with key-value for every month, where key is month, and value is discount
+  # creates object with key-value for every month,
+  # where key is month, and value is discount
   def set_discounts
     keys = @transactions.keys - [:ignored]
     @discounts = Hash[keys.product([MAX_MONTHLY_DISCOUNT])]
@@ -57,7 +58,7 @@ class Discounter < ShipmentConfig
       next if key == :ignored
       next if @discounts[key] <= 0
       check_lowest_package_discount(transaction) if transaction[LOWEST_PRICE_ON]
-    end    
+    end
   end
 
   def check_lowest_package_discount(transaction)
@@ -76,11 +77,11 @@ class Discounter < ShipmentConfig
     available_discount = @discounts[t[:month]]
     total_discount = [discount, available_discount].min
     @discounts[t[:month]] = (available_discount - total_discount).round(2)
-    t[:discount] = total_discount if total_discount > 0  
+    t[:discount] = total_discount if total_discount > 0
   end
 
   def current_price(t)
-    lowest_prices[ t[:provider].to_sym ]
+    lowest_prices[t[:provider].to_sym]
   end
 
   def minimum_price
@@ -88,9 +89,11 @@ class Discounter < ShipmentConfig
   end
 
   def lowest_prices
-    { 
-      "#{LA_POSTE}": ShipmentConfig.const_get("C_#{LA_POSTE}_#{LOWEST_PRICE_ON}"), 
-      "#{MONDIAL_RELAY}": ShipmentConfig.const_get("C_#{MONDIAL_RELAY}_#{LOWEST_PRICE_ON}") 
+    lp_const = ShipmentConfig.const_get("C_#{LA_POSTE}_#{LOWEST_PRICE_ON}")
+    mr_const = ShipmentConfig.const_get("C_#{MONDIAL_RELAY}_#{LOWEST_PRICE_ON}")
+    {
+      LA_POSTE.to_sym => lp_const,
+      MONDIAL_RELAY.to_sym => mr_const
     }
   end
 

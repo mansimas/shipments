@@ -1,7 +1,7 @@
 require_relative 'shipment_config'
 
+# Reading from file and building object for faster processing
 class FileIterator < ShipmentConfig
-
   def initialize(file_path)
     @transactions = { ignored: [] }
     @file_path = file_path
@@ -11,8 +11,8 @@ class FileIterator < ShipmentConfig
     File.readlines(@file_path).each_with_index do |line, index|
       add_transaction(line, index)
     end
-    
-    @transactions 
+
+    @transactions
   end
 
   private
@@ -20,17 +20,19 @@ class FileIterator < ShipmentConfig
   def add_transaction(line, index)
     arrayed = line_as_array(line)
     return set_line(arrayed, index) if valid_line(arrayed)
-    @transactions[:ignored].push({ arrayed: arrayed, index: index })
+    @transactions[:ignored].push(arrayed: arrayed, index: index)
   end
 
   def set_line(arrayed, index)
-    month = set_and_get_month(arrayed)
+    month = month_appointment(arrayed)
     objected = line_as_object(arrayed, index, month)
-    @transactions[month][objected[:size]] = [] unless @transactions[month][objected[:size]]
+    unless @transactions[month][objected[:size]]
+      @transactions[month][objected[:size]] = []
+    end
     @transactions[month][objected[:size]].push(objected)
   end
 
-  def set_and_get_month(arrayed)
+  def month_appointment(arrayed)
     month_name = arrayed[0].split(DATE_DELIMITER).first(2).join('-')
     @transactions[month_name] = {} unless @transactions[month_name]
     month_name
@@ -46,7 +48,7 @@ class FileIterator < ShipmentConfig
       size: line[1],
       provider: line[2],
       index: index,
-      month: month,
+      month: month
     }
   end
 
@@ -59,24 +61,30 @@ class FileIterator < ShipmentConfig
   end
 
   def valid_date(date)
-    valid = false
+    return passing_date(date) if date.split(DATE_DELIMITER).length == 3
+    false
+  end
 
-    begin
-      valid = true if date.split(DATE_DELIMITER).length == 3
-    rescue 
-      false
-    end
+  def passing_date(date)
+    splitted = date.split(DATE_DELIMITER)
+    return false unless right_date_length(splitted)
+    return false unless right_date_scope(splitted)
+    true
+  end
 
-    if valid
-      splitted = date.split(DATE_DELIMITER)
-      valid = false unless splitted[0].length == 4
-      valid = false unless splitted[1].length == 2
-      valid = false unless splitted[2].length == 2
-      valid = false if splitted[0].to_i < 1900 || splitted[0].to_i > 2100
-      valid = false if splitted[1].to_i > 12
-      valid = false if splitted[2].to_i > 31
-    end
+  # checking 2000-02-02 format
+  def right_date_length(date_arr)
+    return false unless date_arr[0].length == 4
+    return false unless date_arr[1].length == 2
+    return false unless date_arr[2].length == 2
+    true
+  end
 
-    valid
+  # date outside of range of 1900 and 2100 would be not logical
+  def right_date_scope(date_arr)
+    return false if date_arr[0].to_i < 1900 || date_arr[0].to_i > 2100
+    return false if date_arr[1].to_i > 12
+    return false if date_arr[2].to_i > 31
+    true
   end
 end
